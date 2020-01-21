@@ -1,4 +1,4 @@
-import { NAME_CHANGED, CATEGORY_CHANGED, MONEY_CHANGED, SUBMIT_EXPENSE } from './type';
+import { NAME_CHANGED, CATEGORY_CHANGED, MONEY_CHANGED, SUBMIT_EXPENSE, NEW_NAME_REQ } from './type';
 
 export const nameChanged = (text) => {
     return {
@@ -22,8 +22,14 @@ export const moneyChanged = (value) => {
 }
 
 export const onSubmitExpense = (name, category, expense) =>{
-    console.log(name, category, expense);
     return{
         type: SUBMIT_EXPENSE
+    }
+}
+
+export const newNameRequest = (isNew) => {
+    return{
+        type: NEW_NAME_REQ,
+        payload: isNew
     }
 }

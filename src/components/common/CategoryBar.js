@@ -6,11 +6,14 @@ const CategoryBar = ({ label, data,  initValue, onChange }) => {
   const { containerStyle, labelStyle, selectorStyle } = styles;
   if(!initValue){
     initValue = "Choose Category First";
+    if(label === "Name"){
+      initValue = "Choose an Expense First";
+    }
   }
   return (
     <View style={containerStyle}>
       <Text style={labelStyle}>
-        Category
+        {label}
       </Text>
       <ModalSelector
         touchableStyle={selectorStyle}

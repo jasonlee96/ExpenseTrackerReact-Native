@@ -1,13 +1,22 @@
 import React, { Component } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TextComponent } from 'react-native';
 import { connect } from 'react-redux';
 import { NavBar, InputBar, Button, CategoryBar } from './common';
-import { nameChanged, moneyChanged, categoryChanged, onSubmitExpense } from '../actions'
+import { nameChanged, moneyChanged, categoryChanged, onSubmitExpense, newNameRequest } from '../actions'
 
 class ExpenseForm extends Component {
+  onNewNameChange(text){
+    this.props.nameChanged(text);
+  }
   onNameChange(text){
     //May change to categoryBar
-    this.props.nameChanged(text);
+    if(text.key == "new"){
+      this.props.newNameRequest(true);
+      text={key:"Empty", label: ''};
+    }else{
+      this.props.newNameRequest(false);
+    }
+    this.props.nameChanged(text.label);
   }
 
   onCategoryChange(category){
@@ -34,9 +43,48 @@ class ExpenseForm extends Component {
   }
 
   renderError(){
-    return (
+    return ;
+  }
+
+  renderNameBar(){
+    
+    const data =  [
+      { key: "Empty", section: true, label: 'Expense Name' },
+      { key: "Bill", label: 'Bill' },
+      { key: "General", label: 'General' },
+      { key: "Food", label: 'Food' },
+      { key: "new", label: 'New Expense'},
+      // etc...
+      // Can also add additional custom keys which are passed to the onChange callback
+  ];
+    if(this.props.isNew){
+      return(
+        <View>
+          <CategoryBar
+            label="Name"
+            data={data}
+            initValue={this.props.name}
+            onChange={this.onNameChange.bind(this)}
+          />
+          <InputBar
+            label="Expense"
+            placeholder="New Expense Name"
+            onChangeText={this.onNewNameChange.bind(this)}
+            value={this.props.name}
+          />
+        </View>
+      );
+    }else{
       
-    );
+      return(
+        <CategoryBar 
+          label="Name"
+          data={data}
+          initValue={this.props.name}
+          onChange={this.onNameChange.bind(this)}
+        />
+      );
+    }
   }
 
   render (){
@@ -55,18 +103,14 @@ class ExpenseForm extends Component {
         <Text style={titleStyle}>
         Add New Expense
         </Text>
-        <CategoryBar 
+        <CategoryBar
+          label="Category" 
           data={data}
           initValue={this.props.category.label}
           onChange={this.onCategoryChange.bind(this)}
         />
 
-        <InputBar
-          label="Name"
-          placeholder="Name"
-          onChangeText={this.onNameChange.bind(this)}
-          value={this.props.name}
-        />
+        {this.renderNameBar()}
         
         <InputBar
           label="Amount"
@@ -87,9 +131,9 @@ class ExpenseForm extends Component {
 }
 
 const mapStateToProps = (state) => {
-  const { name, expense, category, error, loading } = state.expense;
+  const { name, expense, category, error, loading, isNew } = state.expense;
 
-  return { name, expense, category, error, loading };
+  return { name, expense, category, error, loading, isNew };
 }
 
 const styles = {
@@ -107,4 +151,4 @@ const styles = {
   }
 }
 
-export default connect(mapStateToProps, { onSubmitExpense, nameChanged, moneyChanged, categoryChanged })(ExpenseForm);
+export default connect(mapStateToProps, { onSubmitExpense, nameChanged, moneyChanged, categoryChanged, newNameRequest })(ExpenseForm);

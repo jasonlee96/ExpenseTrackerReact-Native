@@ -1,4 +1,4 @@
-import { NAME_CHANGED, CATEGORY_CHANGED, MONEY_CHANGED, SUBMIT_EXPENSE, SUBMIT_FAILED, SUBMIT_SUCCESS } from '../actions/type';
+import { NAME_CHANGED, CATEGORY_CHANGED, MONEY_CHANGED, SUBMIT_EXPENSE, SUBMIT_FAILED, SUBMIT_SUCCESS, NEW_NAME_REQ } from '../actions/type';
 
 
 const INITIAL_STATE = {
@@ -6,12 +6,14 @@ const INITIAL_STATE = {
     category: '',
     expense: '0.00',
     loading: false,
-    error: ''
+    error: '',
+    isNew: false
 };
 
 export default (state = INITIAL_STATE, action) => {
-    console.log(state);
     switch(action.type){
+        case NEW_NAME_REQ:
+            return{ ...state, isNew: action.payload};
         case NAME_CHANGED:
             return { ...state , name: action.payload};
         case CATEGORY_CHANGED:
@@ -27,4 +29,5 @@ export default (state = INITIAL_STATE, action) => {
         default:
             return state;
     }
+
 };
