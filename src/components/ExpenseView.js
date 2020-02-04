@@ -2,20 +2,61 @@ import React, { Component } from 'react';
 import { View, Text } from 'react-native';
 import { CategoryBox, CategoryItem, Button, MoneyViewer } from './common';
 import { Actions } from 'react-native-router-flux';
+import Database from './Database';
 
 export default class ExpenseView extends Component {
+  expenses =[];
+  componentWillMount(){
+    let db = new Database();
+    
+    //db.dropTable();
+    //db.insertExpense();
+    //db.testData();
+    db.listExpenseCategory().then(
+      (data) =>{
+        this.expenses = data;
+        this.forceUpdate();
+      }
+    ).catch(
+      error=>{console.log("List Expense Error: " + error)}
+    );
+  }
+
   onPress(){
     Actions.addExpense();
   }
 
+  renderCategory(){
+    const { textStyle, buttonStyle } = styles;
+    console.log(this.expenses.length);
+    return this.expenses.map((expense)=>{
+      return (
+        <CategoryItem>
+          <Text style={textStyle}>
+            {expense.catName}
+          </Text>
+          <Text style={textStyle}>
+            {expense.total}
+          </Text>
+        </CategoryItem>
+      );
+    })
+      
+  }
+
   render() {
     const { textStyle, buttonStyle } = styles;
-
+    var sum = 0;
+    if(this.expenses.length > 0){
+      sum = this.expenses.reduce((acc, currentObj) => {
+        acc+= currentObj.total;
+        return acc;
+      }, 0);
+    }
     return (
       <View styles={{ flexDirection: 'column' }}>
         <View>
-          <MoneyViewer date={this.props.date} expense="2300" title="Daily Expenses"/>
-
+          <MoneyViewer date={this.props.date} expense={sum} title="Daily Expenses"/>
           <CategoryBox>
             <CategoryItem>
               <Text style={textStyle}>
@@ -25,42 +66,7 @@ export default class ExpenseView extends Component {
                 Total (RM)
               </Text>
             </CategoryItem>
-
-            <CategoryItem>
-              <Text style={textStyle}>
-                Utilities
-              </Text>
-              <Text style={textStyle}>
-                2,300
-              </Text>
-            </CategoryItem>
-
-            <CategoryItem>
-              <Text style={textStyle}>
-                General
-              </Text>
-              <Text style={textStyle}>
-                2,300
-              </Text>
-            </CategoryItem>
-
-            <CategoryItem>
-              <Text style={textStyle}>
-                Foods
-              </Text>
-              <Text style={textStyle}>
-                2,300
-              </Text>
-            </CategoryItem>
-
-            <CategoryItem>
-              <Text style={textStyle}>
-                Others
-              </Text>
-              <Text style={textStyle}>
-                2,300
-              </Text>
-            </CategoryItem>
+            {this.renderCategory()}
           </CategoryBox>
         </View>
         <View style={buttonStyle}>

@@ -39,7 +39,12 @@ class ExpenseForm extends Component {
   }
 
   onSubmit(){
-    this.props.onSubmitExpense(this.props.name, this.props.category, this.props.expense);
+    if(this.props.category.key != "Empty" || this.props.name != "" || this.props.expense != "")
+      this.props.onSubmitExpense(this.props.name, this.props.category, this.props.expense);    
+    else
+      //TODO: Make modal/toast for error  
+      console.log("Error");
+
   }
 
   renderError(){
