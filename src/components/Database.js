@@ -37,7 +37,15 @@ export default class Database{
                                             )
                                     });
                                     db.transaction(tx =>{
-                                        tx.executeSql("CREATE TABLE IF NOT EXISTS Expense (exId INTEGER PRIMARY KEY AUTOINCREMENT, catId, exName, value)")
+                                        tx.executeSql("CREATE TABLE IF NOT EXISTS Expense (exId INTEGER PRIMARY KEY AUTOINCREMENT, catId, exName, value, date)")
+                                            .then(
+                                                () => console.log("Expense Table created successfully")
+                                            ).catch(
+                                                (error) => console.log("ERROR: " + error)
+                                            )
+                                    });
+                                    db.transaction(tx =>{
+                                        tx.executeSql("CREATE TABLE IF NOT EXISTS Income (inId INTEGER PRIMARY KEY AUTOINCREMENT, catId, inName, value, date)")
                                             .then(
                                                 () => console.log("Table created successfully")
                                             ).catch(
@@ -45,15 +53,7 @@ export default class Database{
                                             )
                                     });
                                     db.transaction(tx =>{
-                                        tx.executeSql("CREATE TABLE IF NOT EXISTS Income (inId INTEGER PRIMARY KEY AUTOINCREMENT, catId, inName, value)")
-                                            .then(
-                                                () => console.log("Table created successfully")
-                                            ).catch(
-                                                (error) => console.log("ERROR: " + error)
-                                            )
-                                    });
-                                    db.transaction(tx =>{
-                                        tx.executeSql("CREATE TABLE IF NOT EXISTS Record (recId INTEGER PRIMARY KEY AUTOINCREMENT, itemId, isExpense, timestamp, amount, currentValue)")
+                                        tx.executeSql("CREATE TABLE IF NOT EXISTS Record (recId INTEGER PRIMARY KEY AUTOINCREMENT, itemId, isExpense, timestamp, amount, currentValue, date)")
                                             .then(
                                                 () => console.log("Table created successfully")
                                             ).catch(
@@ -99,6 +99,9 @@ export default class Database{
     listExpenseCategory(){
         return new Promise((resolve)=>{
             const data = [];
+            var today = new Date();
+            let currDate = today.getMonth()+""+(today.getYear()+1900);
+            console.log(currDate);
             this.initDB().then(db=>{
                 db.transaction(tx=>{
                     //TODO: adjust query to match SUM of value for each category
@@ -108,7 +111,7 @@ export default class Database{
                         for(var i = 0; i < results.rows.length; i++){
                             let row = results.rows.item(i);
                             db.transaction(tx=>{
-                                tx.executeSql(`SELECT SUM(value) as total FROM Expense WHERE catId = ${row.catId} GROUP BY catId`).then(([tx, results]) => {
+                                tx.executeSql(`SELECT SUM(value) as total FROM Expense WHERE catId = ${row.catId} AND date='${currDate}' GROUP BY catId`).then(([tx, results]) => {
                                     if(results.rows.item(0)){
                                         row.total = results.rows.item(0)["total"];
                                     }else{
@@ -135,37 +138,29 @@ export default class Database{
             const data = [{ key: "Empty", section: true, label: 'Category' }];
             this.initDB().then(db=>{
                 db.transaction(tx=>{
-                    tx.executeSql("DELETE FROM Expense").then(() => {
-                        console.log("Query completed");
+                    tx.executeSql("DROP TABLE Income").then(() => {
+                        console.log("Drop Income Query completed");
                     });
                 });
+                
             });
         });
     }
     testData(){
         return new Promise((resolve)=>{
             const data = [];
+            var today = new Date();
+            let currDate = today.getMonth()+""+(today.getYear()+1900);
             this.initDB().then(db=>{
                 db.transaction(tx=>{
                     //TODO: adjust query to match SUM of value for each category
-                    tx.executeSql("SELECT catId, catName FROM Category WHERE isExpense = 1").then(([tx, results]) => {
-                        console.log("Query completed");
+                    tx.executeSql(`SELECT * FROM Expense WHERE date='${currDate}'`).then(([tx, results]) => {
+                        console.log("Test Query completed");
                         for(var i = 0; i < results.rows.length; i++){
                             
                             let row = results.rows.item(i);
-                            db.transaction(tx=>{
-                                tx.executeSql(`SELECT SUM(value) as total FROM Expense WHERE catId = ${row.catId} GROUP BY catId`).then(([tx, results]) => {
-                                    if(results.rows.item(0)){
-                                        row.total = results.rows.item(0)["total"];
-                                    }else{
-                                        row.total = 0;
-                                    }
-                                    data.push(row);
-                                }).catch(error => console.log("ERROR: " + error));
-                            });
+                            console.log(row);
                         }
-                        
-                        console.log(data);
                     }).catch(
                         error=>console.log("ERROR: "+ error)
                     );
@@ -180,13 +175,13 @@ export default class Database{
             this.initDB().then(db=>{
                 db.transaction(tx=>{
                     const data = [
-                        { name: "Telecommunication Bill", value: "340"},
-                        { name: "Internet Bill", value: "300"},
-                        { name: "Electrical Bill", value: "180"},
-                        { name: "Insurance", value: "1200"}
+                        { name: "Telecommunication Bill", value: "340", date: "12020"},
+                        { name: "Internet Bill", value: "300", date: "12020"},
+                        { name: "Electrical Bill", value: "180", date: "12020"},
+                        { name: "Insurance", value: "1200", date: "12020"}
                     ]
-                    data.map(({name, value})=>{
-                        tx.executeSql("INSERT INTO Expense(catId, exName, value) VALUES(1, ?, ?)", [name, value])
+                    data.map(({name, value, date})=>{
+                        tx.executeSql("INSERT INTO Expense(catId, exName, value, date) VALUES(1, ?, ?, ?)", [name, value, date])
                         .then(
                             () => console.log("Expense Data inserted")
                         ).catch(
@@ -196,6 +191,10 @@ export default class Database{
                 });
             });
         });
+    }
+
+    insertIncome() {
+        //INSERT Income DATA
     }
 
     listIncomeCategory(){
@@ -224,7 +223,27 @@ export default class Database{
     }
 
     listExpense(catId){
-
+        return new Promise((resolve)=>{
+            const data = [];
+            var today = new Date();
+            let currDate = today.getMonth()+""+(today.getYear()+1900);
+            this.initDB().then(db=>{
+                db.transaction(tx=>{
+                    //TODO: adjust query to match SUM of value for each category
+                    tx.executeSql(`SELECT * FROM Expense WHERE date='${currDate}' AND catId = ${catId}`).then(([tx, results]) => {
+                        console.log("Descriptions Query completed");
+                        for(var i = 0; i < results.rows.length; i++){
+                            
+                            let row = results.rows.item(i);
+                            data.push(row);
+                        }
+                        resolve(data);
+                    }).catch(
+                        error=>console.log("ERROR: "+ error)
+                    );
+                });
+            });
+        });
     }
 
     listIncome(catId){

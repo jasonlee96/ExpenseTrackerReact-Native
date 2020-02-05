@@ -10,8 +10,8 @@ export default class ExpenseView extends Component {
     let db = new Database();
     
     //db.dropTable();
-    //db.insertExpense();
-    //db.testData();
+    // db.insertExpense();
+
     db.listExpenseCategory().then(
       (data) =>{
         this.expenses = data;
@@ -27,11 +27,10 @@ export default class ExpenseView extends Component {
   }
 
   renderCategory(){
-    const { textStyle, buttonStyle } = styles;
-    console.log(this.expenses.length);
+    const { textStyle } = styles;
     return this.expenses.map((expense)=>{
       return (
-        <CategoryItem>
+        <CategoryItem key={expense.catId}>
           <Text style={textStyle}>
             {expense.catName}
           </Text>
@@ -58,7 +57,7 @@ export default class ExpenseView extends Component {
         <View>
           <MoneyViewer date={this.props.date} expense={sum} title="Daily Expenses"/>
           <CategoryBox>
-            <CategoryItem>
+            <CategoryItem key={0}>
               <Text style={textStyle}>
                 Category
               </Text>

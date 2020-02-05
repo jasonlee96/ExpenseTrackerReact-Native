@@ -5,7 +5,7 @@ const CategoryItem = ({ children }) => {
   const { containerStyle } = styles;
 
   return (
-    <View style={containerStyle}>
+    <View style={containerStyle} key={children.key}>
       {children}
     </View>
   );
